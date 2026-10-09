@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QuizCraft - Interactive Quiz Builder & Live Arena</title>
+  <meta name="description" content="Design, share, and play interactive quizzes with real-time multiplayer, randomized questions, score analytics, and reports.">
+
+  <!-- Google Font: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/animations.css">
+  <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+
+  <!-- Confetti Canvas for Victory Celebrations -->
+  <canvas id="confetti-canvas"></canvas>
+
+  <!-- Navigation Bar -->
+  <header class="navbar no-print">
+    <div class="container nav-container">
+      <div class="brand-logo" title="Quiz Home">
+        <div class="brand-icon">⚡</div>
+        <div class="brand-text">Quiz<span>Craft</span></div>
+      </div>
+
+      <nav>
+        <ul class="nav-links">
+          <li><a href="#" class="nav-link active" data-target="dashboard">🏠 Explore Quizzes</a></li>
+          <li><a href="#" class="nav-link" data-target="builder">✏️ Quiz Builder</a></li>
+          <li><a href="#" class="nav-link" id="btn-nav-join-live">⚡ Join Live Arena</a></li>
+          <li><a href="#" class="nav-link" data-target="history">📊 My History</a></li>
+        </ul>
+      </nav>
+
+      <div class="nav-actions">
+        <!-- Sound FX Toggle -->
+        <button type="button" class="sound-toggle-btn" id="sound-toggle-btn" title="Toggle Sound FX">🔊</button>
+
+        <!-- Dark/Light Theme Toggle -->
+        <button type="button" class="theme-toggle-btn" id="theme-toggle-btn" title="Switch Theme">🌙</button>
+
+        <!-- User Profile (When Logged In) -->
+        <div id="nav-user-section" class="user-profile-badge" style="display:none;" title="Logged In Profile">
+          <div class="user-avatar-sm" id="nav-user-avatar">👩‍🏫</div>
+          <span class="user-name-text" id="nav-user-name">Sarah Jenkins</span>
+          <span class="role-tag" id="nav-user-role">Educator</span>
+          <button type="button" class="btn btn-ghost btn-sm" id="nav-logout-btn" title="Logout" style="padding:0.2rem 0.4rem; font-size:0.8rem;">✕</button>
+        </div>
+
+        <!-- Auth Buttons (When Logged Out) -->
+        <div id="nav-auth-section">
+          <button type="button" class="btn btn-primary btn-sm" onclick="window.app.navigateTo('auth')">Sign In</button>
+        </div>
+
+        <!-- Mobile Menu Toggle Button -->
+        <button type="button" class="btn btn-secondary mobile-menu-btn" id="mobile-menu-toggle" style="display:none; padding:0.4rem 0.6rem;">☰</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Application Views -->
+  <main class="app-main container">
+
+    <!-- ====================================================================
+         VIEW: AUTHENTICATION (LOGIN & REGISTER)
+         ==================================================================== -->
+    <section id="view-auth" class="view-section">
+      <div style="max-width: 480px; margin: 2rem auto;">
+        <div class="card" style="padding: 2.25rem;">
+          <!-- Auth Tabs -->
+          <div style="display:flex; border-bottom: 2px solid var(--border-color); margin-bottom: 1.75rem;">
+            <button type="button" id="auth-tab-login" class="btn-ghost active" style="flex:1; padding:0.75rem; font-weight:700; font-size:1.05rem; border-bottom: 2px solid var(--primary); margin-bottom:-2px; background:none; cursor:pointer;">
+              Sign In
+            </button>
+            <button type="button" id="auth-tab-register" class="btn-ghost" style="flex:1; padding:0.75rem; font-weight:700; font-size:1.05rem; border-bottom: 2px solid transparent; margin-bottom:-2px; background:none; cursor:pointer; color:var(--text-muted);">
+              Create Account
+            </button>
+          </div>
+
+          <!-- Login Form -->
+          <form id="form-login">
+            <div class="form-group">
+              <label class="form-label" for="login-email">Email Address</label>
+              <input type="email" id="login-email" class="form-input" placeholder="name@example.com" required value="teacher@quizcraft.io">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="login-password">Password</label>
+              <input type="password" id="login-password" class="form-input" placeholder="••••••••" required value="password123">
+            </div>
+
+            <div id="login-error" class="form-error-msg"></div>
+
+            <button type="submit" class="btn btn-primary btn-lg" style="width:100%; margin-top:1rem;">
+              Sign In to QuizCraft
+            </button>
+
+            <!-- Quick Demo Login Presets -->
+            <div style="margin-top: 1.75rem; padding-top: 1.25rem; border-top: 1px solid var(--border-color); text-align:center;">
+              <span style="font-size:0.8rem; font-weight:600; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px;">Quick Demo Logins</span>
+              <div style="display:flex; gap:0.5rem; margin-top:0.75rem;">
+                <button type="button" class="btn btn-secondary btn-sm" id="btn-demo-teacher" style="flex:1;">👩‍🏫 Teacher Sarah</button>
+                <button type="button" class="btn btn-secondary btn-sm" id="btn-demo-student" style="flex:1;">🚀 Student Alex</button>
+              </div>
+              <button type="button" class="btn btn-ghost btn-sm" id="btn-continue-guest" style="width:100%; margin-top:0.6rem;">
+                🎮 Continue as Guest Player
+              </button>
+            </div>
+          </form>
+
+          <!-- Register Form -->
+          <form id="form-register" style="display:none;">
+            <div class="form-group">
+              <label class="form-label" for="reg-name">Full Name</label>
+              <input type="text" id="reg-name" class="form-input" placeholder="Dr. Jane Doe" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="reg-email">Email Address</label>
+              <input type="email" id="reg-email" class="form-input" placeholder="jane@school.edu" required>
+            </div>
+
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem;">
+              <div class="form-group">
+                <label class="form-label" for="reg-password">Password</label>
+                <input type="password" id="reg-password" class="form-input" placeholder="••••••••" required minlength="6">
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="reg-confirm-password">Confirm</label>
+                <input type="password" id="reg-confirm-password" class="form-input" placeholder="••••••••" required minlength="6">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="reg-role">Role</label>
+              <select id="reg-role" class="form-select">
+                <option value="Educator">Educator / Teacher (Create & Host)</option>
+                <option value="Student" selected>Student / Learner (Play & Compete)</option>
+                <option value="Trivia Master">Trivia Fanatic / Creator</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Choose Avatar</label>
+              <div class="avatar-grid" id="register-avatar-picker"></div>
+            </div>
+
+            <div id="register-error" class="form-error-msg"></div>
+
+            <button type="submit" class="btn btn-primary btn-lg" style="width:100%; margin-top:1rem;">
+              Create My Account
+            </button>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         VIEW: DASHBOARD (EXPLORE & MANAGE QUIZZES)
+         ==================================================================== -->
+    <section id="view-dashboard" class="view-section active">
+      <!-- Hero Banner -->
+      <div class="hero-banner">
+        <div class="hero-content">
+          <span class="hero-tag">Interactive Knowledge Hub</span>
+          <h1 class="hero-title">Create, Play & <span class="gradient-text">Compete in Real-Time</span></h1>
+          <p class="hero-subtitle">
+            Craft engaging quizzes with multiple choice, true/false, or open-ended questions. Challenge classmates in the Live Arena and analyze in-depth performance reports.
+          </p>
+          <div class="hero-actions">
+            <button type="button" class="btn btn-primary btn-lg" onclick="window.builder.resetForm(); window.app.navigateTo('builder');">
+              ✨ Build a Quiz
+            </button>
+            <button type="button" class="btn btn-secondary btn-lg" onclick="document.getElementById('modal-join-live').classList.add('active');">
+              ⚡ Join Game with PIN
+            </button>
+          </div>
+        </div>
+
+        <div class="hero-stats-badge">
+          <div class="stat-bubble">
+            <span class="number" id="dash-stat-quizzes">3</span>
+            <span class="label">Quizzes Available</span>
+          </div>
+          <div class="stat-bubble">
+            <span class="number" id="dash-stat-attempts">0</span>
+            <span class="label">Attempts Taken</span>
+          </div>
+          <div class="stat-bubble">
+            <span class="number" id="dash-stat-avg">0%</span>
+            <span class="label">Avg Score</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Search & Filters -->
+      <div class="filter-bar">
+        <div class="search-box">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="text" id="search-quiz-input" class="form-input" placeholder="Search quizzes by title, category, or keyword...">
+        </div>
+
+        <div class="category-chips">
+          <button type="button" class="chip-btn active" data-category="all">All Topics</button>
+          <button type="button" class="chip-btn" data-category="Technology">💻 Tech</button>
+          <button type="button" class="chip-btn" data-category="Science">🪐 Science</button>
+          <button type="button" class="chip-btn" data-category="Geography">🌍 Geography</button>
+          <button type="button" class="chip-btn" data-category="General">🧠 General</button>
+        </div>
+
+        <div style="display:flex; gap:0.5rem;">
+          <button type="button" class="btn btn-secondary btn-sm" id="btn-import-quiz-json" title="Import Quiz JSON">📥 Import</button>
+          <button type="button" class="btn btn-ghost btn-sm" id="btn-reset-defaults" title="Reset Default Quizzes">🔄 Reset</button>
+        </div>
+      </div>
+
+      <!-- Quizzes Grid -->
+      <div class="quiz-grid" id="quiz-grid-container">
+        <!-- Rendered via JS -->
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         VIEW: QUIZ BUILDER & EDITOR
+         ==================================================================== -->
+    <section id="view-builder" class="view-section">
+      <div class="builder-layout">
+        <!-- Settings Sidebar -->
+        <aside class="builder-sidebar">
+          <div class="builder-settings-card">
+            <h3 style="margin-bottom:1.25rem;">⚙️ Quiz Settings</h3>
+
+            <div class="form-group">
+              <label class="form-label" for="builder-title">Quiz Title <span style="color:var(--danger)">*</span></label>
+              <input type="text" id="builder-title" class="form-input" placeholder="e.g. Modern JavaScript Fundamentals">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="builder-desc">Description</label>
+              <textarea id="builder-desc" class="form-textarea" placeholder="Brief summary of what this quiz covers..."></textarea>
+            </div>
+
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.75rem;">
+              <div class="form-group">
+                <label class="form-label" for="builder-category">Category</label>
+                <select id="builder-category" class="form-select">
+                  <option value="Technology">Technology</option>
+                  <option value="Science">Science</option>
+                  <option value="Geography">Geography</option>
+                  <option value="Entertainment">Entertainment</option>
+                  <option value="General" selected>General</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="builder-difficulty">Difficulty</label>
+                <select id="builder-difficulty" class="form-select">
+                  <option value="Beginner">Beginner</option>
+                  <option value="Intermediate" selected>Intermediate</option>
+                  <option value="Hard">Hard</option>
+                </select>
+              </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.75rem;">
+              <div class="form-group">
+                <label class="form-label" for="builder-icon">Icon / Emoji</label>
+                <input type="text" id="builder-icon" class="form-input" value="🧠" maxlength="4">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="builder-pass-percent">Pass Mark (%)</label>
+                <input type="number" id="builder-pass-percent" class="form-input" value="70" min="10" max="100">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="builder-time-limit">Time Limit <span class="form-label-help">(seconds, 0 = untimed)</span></label>
+              <input type="number" id="builder-time-limit" class="form-input" value="60" min="0" step="10">
+            </div>
+
+            <div style="margin-top:1.5rem; padding-top:1rem; border-top:1px solid var(--border-color);">
+              <label class="form-label" style="margin-bottom:0.75rem;">Quiz Behaviors</label>
+              
+              <label style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.6rem; cursor:pointer; font-size:0.9rem;">
+                <input type="checkbox" id="builder-shuffle-q" checked> Randomize Question Order
+              </label>
+
+              <label style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.6rem; cursor:pointer; font-size:0.9rem;">
+                <input type="checkbox" id="builder-shuffle-opt" checked> Randomize Answer Options
+              </label>
+
+              <label style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.6rem; cursor:pointer; font-size:0.9rem;">
+                <input type="checkbox" id="builder-instant-feedback"> Immediate Answer Feedback
+              </label>
+            </div>
+          </div>
+        </aside>
+
+        <!-- Questions Editor Column -->
+        <div class="builder-questions-column">
+          <div class="builder-header-bar">
+            <div>
+              <h2 id="builder-page-title">Create New Quiz</h2>
+              <span id="builder-question-count-badge" class="badge badge-cat" style="margin-top:0.35rem;">1 Question</span>
+            </div>
+
+            <div style="display:flex; gap:0.75rem;">
+              <button type="button" class="btn btn-secondary" id="btn-builder-preview">👁️ Live Test</button>
+              <button type="button" class="btn btn-ghost" id="btn-builder-cancel">Cancel</button>
+              <button type="button" class="btn btn-primary" id="btn-builder-save">💾 Save Quiz</button>
+            </div>
+          </div>
+
+          <!-- Questions Container -->
+          <div id="builder-questions-container" style="display:flex; flex-direction:column; gap:1.5rem;">
+            <!-- Rendered by builder.js -->
+          </div>
+
+          <!-- Add Question Toolbar -->
+          <div class="card" style="text-align:center; padding:1.75rem; border:2px dashed var(--border-color); background:transparent;">
+            <h4>Add Next Question</h4>
+            <p style="margin: 0.25rem 0 1rem; font-size:0.9rem;">Choose the question format to insert:</p>
+            <div class="add-question-menu" style="justify-content:center;">
+              <button type="button" class="btn btn-secondary" id="btn-add-mcq">
+                🔘 Multiple Choice
+              </button>
+              <button type="button" class="btn btn-secondary" id="btn-add-tf">
+                ⚖️ True / False
+              </button>
+              <button type="button" class="btn btn-secondary" id="btn-add-open">
+                ✍️ Open-Ended
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         VIEW: SOLO QUIZ PLAYER
+         ==================================================================== -->
+    <section id="view-player" class="view-section">
+      <div class="player-container">
+        <!-- Player Header -->
+        <div class="player-header">
+          <div>
+            <span id="player-q-type-badge" class="badge badge-cat">Multiple Choice</span>
+            <h2 id="player-quiz-title" style="margin-top:0.35rem;">Quiz Title</h2>
+          </div>
+
+          <div style="display:flex; align-items:center; gap:0.75rem;">
+            <button type="button" class="btn btn-ghost btn-sm" id="player-btn-flag" title="Flag for Review">
+              🚩 Flag
+            </button>
+            <div class="player-timer-badge" id="player-timer-badge">
+              ⏱️ <span id="player-timer">01:30</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="player-progress-bar-wrap">
+          <div class="player-progress-bar" id="player-progress-bar"></div>
+        </div>
+
+        <!-- Question Map / Grid Drawer -->
+        <div class="player-question-map" id="player-q-map">
+          <!-- Question jumps (1, 2, 3, etc.) -->
+        </div>
+
+        <!-- Main Question Card -->
+        <div class="player-question-card">
+          <div style="display:flex; justify-content:space-between; margin-bottom:1rem; font-size:0.85rem; color:var(--text-muted); font-weight:600;">
+            <span id="player-q-counter">Question 1 of 5</span>
+          </div>
+
+          <div class="player-question-text" id="player-q-text">
+            Loading question prompt...
+          </div>
+
+          <!-- Dynamic Options Grid -->
+          <div class="player-options-grid" id="player-options-container">
+            <!-- Rendered by player.js -->
+          </div>
+
+          <!-- Immediate Feedback Explanation Box -->
+          <div class="player-explanation-box" id="player-explanation-box"></div>
+        </div>
+
+        <!-- Navigation Footer -->
+        <div class="player-footer-nav">
+          <button type="button" class="btn btn-secondary btn-lg" id="player-btn-prev">
+            ← Previous
+          </button>
+          <div>
+            <button type="button" class="btn btn-primary btn-lg" id="player-btn-next">
+              Next Question →
+            </button>
+            <button type="button" class="btn btn-success btn-lg" id="player-btn-submit" style="display:none;">
+              Finish & Submit Quiz ✓
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         VIEW: LIVE ARENA (REAL-TIME MULTIPLAYER COMPETITION)
+         ==================================================================== -->
+    <section id="view-live" class="view-section">
+      <div id="live-arena-view-container">
+        <!-- Rendered dynamically by live.js -->
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         VIEW: REPORTS & ANALYTICS
+         ==================================================================== -->
+    <section id="view-reports" class="view-section">
+      <div id="report-view-container">
+        <!-- Rendered dynamically by reports.js -->
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         VIEW: USER HISTORY & PAST SCORECARDS
+         ==================================================================== -->
+    <section id="view-history" class="view-section">
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+          <div>
+            <h2>Quiz History & Performance</h2>
+            <p>Review past assessment scores, accuracy, and detailed scorecards.</p>
+          </div>
+        </div>
+
+        <div style="overflow-x:auto;">
+          <table style="width:100%; border-collapse:collapse; text-align:left;">
+            <thead>
+              <tr style="border-bottom: 2px solid var(--border-color); color:var(--text-muted); font-size:0.85rem; text-transform:uppercase;">
+                <th style="padding:0.75rem 1rem;">Quiz Title</th>
+                <th style="padding:0.75rem 1rem;">Date & Time</th>
+                <th style="padding:0.75rem 1rem;">Score</th>
+                <th style="padding:0.75rem 1rem;">Percentage</th>
+                <th style="padding:0.75rem 1rem;">Result</th>
+                <th style="padding:0.75rem 1rem;">Action</th>
+              </tr>
+            </thead>
+            <tbody id="history-table-body">
+              <!-- Rendered by app.js -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ====================================================================
+       MODALS
+       ==================================================================== -->
+
+  <!-- Join Live Room Modal -->
+  <div class="modal-backdrop" id="modal-join-live">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3>⚡ Join Live Game Arena</h3>
+        <button type="button" class="modal-close-btn">&times;</button>
+      </div>
+      <form id="form-join-live">
+        <p style="margin-bottom:1.25rem; font-size:0.95rem;">Enter the 6-digit Game PIN provided by the quiz host:</p>
+        <div class="form-group">
+          <label class="form-label" for="join-game-pin">Game PIN</label>
+          <input type="text" id="join-game-pin" class="form-input" placeholder="e.g. 742 918" style="font-size:1.5rem; letter-spacing:4px; font-weight:800; text-align:center;" required maxlength="8">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="join-nickname">Your Nickname</label>
+          <input type="text" id="join-nickname" class="form-input" placeholder="Enter player name..." value="Player One">
+        </div>
+        <div style="display:flex; justify-content:flex-end; gap:0.75rem; margin-top:1.5rem;">
+          <button type="button" class="btn btn-secondary btn-modal-cancel">Cancel</button>
+          <button type="submit" class="btn btn-primary">Enter Lobby ➔</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Share Quiz Modal -->
+  <div class="modal-backdrop" id="modal-share">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3>🔗 Share Quiz</h3>
+        <button type="button" class="modal-close-btn">&times;</button>
+      </div>
+      <p style="margin-bottom:1rem;">Share this interactive quiz link with your students or peers:</p>
+      <div class="form-group">
+        <label class="form-label" id="share-quiz-title">Quiz Title</label>
+        <div style="display:flex; gap:0.5rem;">
+          <input type="text" id="share-quiz-url" class="form-input" readonly>
+          <button type="button" class="btn btn-primary" id="btn-copy-share-url">Copy</button>
+        </div>
+      </div>
+      <div style="text-align:center; padding:1.5rem; background:var(--bg-input); border-radius:var(--radius-lg); margin-top:1rem;">
+        <div style="font-size:3.5rem;">📱</div>
+        <p style="font-size:0.85rem; color:var(--text-muted); margin-top:0.5rem;">Direct Link & Embedded Challenge Access</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Import Quiz JSON Modal -->
+  <div class="modal-backdrop" id="modal-import-quiz">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3>📥 Import Quiz JSON</h3>
+        <button type="button" class="modal-close-btn">&times;</button>
+      </div>
+      <p style="margin-bottom:1rem; font-size:0.9rem;">Paste JSON schema for custom quizzes:</p>
+      <div class="form-group">
+        <textarea id="import-json-text" class="form-textarea" style="height:160px; font-family:monospace; font-size:0.85rem;" placeholder='{ "title": "My Custom Quiz", "questions": [...] }'></textarea>
+      </div>
+      <div style="display:flex; justify-content:flex-end; gap:0.75rem;">
+        <button type="button" class="btn btn-secondary btn-modal-cancel">Cancel</button>
+        <button type="button" class="btn btn-primary" id="btn-submit-import-json">Import Quiz</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- JavaScript Modules -->
+  <script src="js/audio.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/builder.js"></script>
+  <script src="js/player.js"></script>
+  <script src="js/live.js"></script>
+  <script src="js/reports.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
